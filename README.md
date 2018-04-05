@@ -1,4 +1,4 @@
-# CFS-Scheduler-
+# CFS-Scheduler
 #### This is a simplifed implementation of Completely Fair Scheduler using Red Black Trees and Min Heap Data Structures in C++ 
 
 CFS was added to linux kernel 2.6 and is the default scheduler there after. 
@@ -7,4 +7,4 @@ CFS was added to linux kernel 2.6 and is the default scheduler there after.
 - It makes use of min Heap picking up the least executed jobs in O(1) for multicore and O(log n) for Single core processors. 
 
 
-This is still under testing phase.
+This is still in testing phase.
