@@ -4,6 +4,7 @@
 heap::heap(int size){
 	root = new heapnode[size];
 	last = 0;
+	size = BUFFER_SIZE;
 }
 
 
@@ -46,6 +47,11 @@ void heap::swapJob(struct heapnode* a,struct heapnode* b){
 heapnode* heap::insert(int jobID,int exec_time,int total_time,rbtnode* p){
 	
 	int ptr = ++last;
+
+	if(last==size){
+		size*=2;
+		root = (struct heapnode*)realloc(root,sizeof(struct heapnode)*size);
+	}
 
 	// rbtnode* temp;
 	root[last].jobID = jobID;
