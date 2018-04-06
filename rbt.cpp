@@ -31,41 +31,35 @@ void findlower(rbtnode *root,int jobid,rbtnode* last, int* flag)
     findlower(root->right,jobid,last,flag);
 }
 
-void findhigher(rbtnode *root,int jobid, int* flag)
-{
-    if(*flag==2)
+void findhigher(rbtnode *root,int jobid, int* flag){
+    if(*flag==1)
         return;
     if (root==NULL)
         return;
 
     findhigher(root->left,jobid,flag);
-    if(root->jobid ==jobid){
-
-        *flag = 1;
-    }
-    else if(*flag==1){
+    if(root->jobid >jobid){
         heapnode* temp2 = root->twin;
         // fout<<temp->jobid;
         fout<<"("<<temp2->jobID<<","<<temp2->exec_time<<","<<temp2->total_time<<")"<<endl;
-        *flag=2;
+        *flag=1;
         return;
     }
     findhigher(root->right,jobid,flag);
 }
-// rbtnode* nextnode(int jobid){
 
 
 
-// }
 
 void rbt::nextnode(int jobid){
     int flag=0;
+    // struct rbtnode* result = NULL;
     // fout<<"nextnode"<<endl;
     findhigher(root,jobid,&flag);
 
-    if(flag!=2)
+    if(flag!=1)
         fout<<"(0,0,0)"<<endl;
-
+    
 }
 
 void rbt::prevnode(int jobid){
@@ -108,13 +102,17 @@ rbtnode* rbt::findnode(int jobid){
 
 
 // recursive function to do in order traversal in range low->high
-void inorderHelper(rbtnode *root,int low,int high)
+void inorderHelper(rbtnode *root,int low,int high,int *flag)
 {
     if (root==NULL)
         return;
     if(root->jobid > low)
-        inorderHelper(root->left,low,high);
+        inorderHelper(root->left,low,high,flag);
     if(root->jobid >= low && root->jobid <=high){
+        if(*flag==0)
+          *flag=1;
+        else
+          fout<<",";
         fout <<"("<< root->jobid <<",";
 
         heapnode* temp = root->twin;
@@ -122,8 +120,9 @@ void inorderHelper(rbtnode *root,int low,int high)
     }
     //print more info here
     if(root->jobid <high)
-        inorderHelper(root->right,low,high);
+        inorderHelper(root->right,low,high,flag);
 }
+ 
  
 // function to insert a new node into the structure
 rbtnode* rbtinsert(rbtnode* root, rbtnode *ptr){
@@ -280,10 +279,12 @@ rbtnode* rbt::insert(const int &jobid){
 // Function in order traversal
 
 void rbt::inorder(int low,int high){
-    inorderHelper(root,low,high);
+    int flag=0;
+    inorderHelper(root,low,high,&flag);
+    if(flag==0)
+      fout<<"(0,0,0)";
     fout<<endl;
 }
-
 
 
 rbtnode* successor(rbtnode *p)

@@ -9,6 +9,7 @@
 using namespace std;
 
 
+#define BUFFER_SIZE 1000
 
 
 ofstream fout;
@@ -18,7 +19,6 @@ ofstream fout;
 #include "rbt.cpp"
 
 
-#define BUFFER_SIZE 1000
 
 
 class scheduler{
@@ -43,8 +43,6 @@ public:
 };
 
 int scheduler::dispatch(int x){
-	// if(x!=5)
-	// 	cout<<"x="<<x<<endl;
 	int retval = 0;
 
 	heapnode* thisnode = &(myheap->root[1]);
@@ -52,20 +50,23 @@ int scheduler::dispatch(int x){
 	
 	
 	thisnode->exec_time+=x;
-	cout<<"dispatch "<<thisnode->jobID<<" totaltime="<<thisnode->total_time<<" exec_time"<<thisnode->exec_time<<endl;
+	// cout<<"dispatch "<<thisnode->jobID<<" totaltime="<<thisnode->total_time<<" exec_time"<<thisnode->exec_time<<endl;
 	if(thisnode->total_time-thisnode->exec_time<=0){
 		retval = thisnode->exec_time-thisnode->total_time;
+		
+		// cout<<"removed node: jobID="<<thisnode->jobID<<" total_time="<<thisnode->total_time<<" exec_time="<<thisnode->exec_time<<endl;
+		// cout<<"retval="<<retval<<" total time="<<thisnode->total_time<<" exec_time="<<thisnode->exec_time<<endl;
+		
 		//overflow 
 		//remove from rbt
 		myrbt->deletenode(thisnode->twin);
+		// myrbt->inorder(0,10000);
 		//remove from heap
 		struct heapnode* temp = myheap->removeMin();
-		cout<<"removed node: jobID="<<temp->jobID<<" total_time="<<temp->total_time<<" exec_time="<<temp->exec_time<<endl;
 		
 	}
 	// fout<<"Dispatched: "<<thisnode->jobID<<endl;
-	if(retval)
-		cout<<"retval="<<retval<<" total time="<<thisnode->total_time<<" exec_time="<<thisnode->exec_time<<endl;
+	// if(retval)
 	myheap->heapify();
 	
 	return retval;
@@ -74,7 +75,11 @@ void scheduler::syncTime(int time){
 	int param,remain;
 	while(time>counter){
 		// cout<<"time="<<time<<" counter="<<counter<<endl;
-		param = time-counter<5?time-counter:5;
+		if(time-counter < 5)
+			param = time-counter;
+		else
+			param = 5;
+		// param = (time-counter)<5?(time-counter):5;
 		
 		if(ifjob()){
 			remain = dispatch(param);
@@ -95,13 +100,15 @@ scheduler::scheduler(){
 		//create rbt
 	}
 void scheduler::printjob(int JobID){
+	// fout<<"printjob1"<<JobID;
+
 	myrbt->findnode(JobID);
-	// fout<<"printjob1"<<JobID<<endl;
 }
 
 void scheduler::printjob(int JobIDlow,int JobIDhigh){
+	// fout<<"printjob2"<<JobIDlow<<" "<<JobIDhigh;
 	myrbt->inorder(JobIDlow,JobIDhigh);
-	// fout<<"printjob2"<<JobIDlow<<JobIDhigh<<endl;
+	
 }
 
 void scheduler::nextjob(int JobID){
@@ -124,7 +131,7 @@ void scheduler::prevjob(int JobID){
 
 void scheduler::insert(int JobID,int totaltime){
 
-	cout<<"inserting node: jobID="<<JobID<<" totaltime="<<totaltime<<endl;
+	// cout<<"inserting node: jobID="<<JobID<<" totaltime="<<totaltime<<endl;
 	//insert into rbt
 	rbtnode* temp2 = myrbt->insert(JobID);
 
