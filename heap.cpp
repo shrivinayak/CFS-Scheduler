@@ -1,6 +1,6 @@
-// #include "heap.h"
 
 
+// constructor for heap class. allocates heap of size BUFFER_SIZE
 heap::heap(int size){
 	root = new heapnode[size];
 	last = 0;
@@ -9,11 +9,13 @@ heap::heap(int size){
 
 
 void heap::execute(int x){
-
+	// function to execute the jobs
 	root[1].exec_time+=x;
 	
 	heapify();
 }
+
+// method to swap two jobs
 void heap::swapJob(struct heapnode* a,struct heapnode* b){
 
 	int jobID,exec_time,total_time;
@@ -44,46 +46,43 @@ void heap::swapJob(struct heapnode* a,struct heapnode* b){
 	//yet to swap twin pointer
 }
 
+
+// insert new node into the heap
 heapnode* heap::insert(int jobID,int exec_time,int total_time,rbtnode* p){
 	
 	int ptr = ++last;
 
-	if(last==size){
+	if(last==size){ // if heap is full, double the array
 		size*=2;
 		root = (struct heapnode*)realloc(root,sizeof(struct heapnode)*size);
 	}
 
-	// rbtnode* temp;
 	root[last].jobID = jobID;
 	root[last].exec_time = exec_time;
 	root[last].total_time = total_time;
 	root[last].twin = p;
-
-	// temp = root[ptr].twin;
-	// temp->twin = &root[ptr];
 	p->twin = &root[ptr];
-	// fout<<"twin:"<<temp->twin<<endl;
 	
-
+	// balance after insert
 	while(ptr>1){
 		if(root[ptr].exec_time < root[ptr/2].exec_time){
 			swapJob(&root[ptr],&root[ptr/2]);
 			ptr = ptr/2;
-			// fout<<"exchange"<<endl;
 		}
 		else
 			break;
 	}
-	// printf("%d %d %d\n",jobID,exec_time,total_time);
-	// fout<<"inserted at "<<last<<" shifted to "<<pos;
 	return &root[ptr];
 }
 
+// used while scheduling
 void heap::updateMin(int exec_time){
 	root[1].exec_time = exec_time;
 	heapify();
 }
 
+
+//regain heap properties after remove min
 void heap::heapify(){
 	int i=1,j;
 	while(1){
@@ -103,10 +102,10 @@ void heap::heapify(){
 			break;
 		
 	}
-	// if(i==1)
-	// 	fout<<"heapified"<<endl;
 }
 
+
+//remove from top of the heap.
 struct heapnode* heap::removeMin(){
 	int i=1;
 

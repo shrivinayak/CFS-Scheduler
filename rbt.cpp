@@ -1,16 +1,5 @@
 
-rbtnode* leftest(rbtnode* root){
-    while(root->left!=NULL)
-        root=root->left;
-    return root;
-}
-
-rbtnode* rightest(rbtnode* root){
-    while(root->right!=NULL)
-        root=root->right;
-    return root;
-}
-
+//healper function for find prev
 void findlower(rbtnode *root,int jobid,rbtnode* last, int* flag)
 {
     if(*flag==1)
@@ -23,7 +12,6 @@ void findlower(rbtnode *root,int jobid,rbtnode* last, int* flag)
         if(last==NULL)
             return;
         heapnode* temp2 = last->twin;
-        // fout<<temp->jobid;
         fout<<"("<<last->jobid<<","<<temp2->exec_time<<","<<temp2->total_time<<")"<<endl;
         *flag = 1;
     }
@@ -31,6 +19,7 @@ void findlower(rbtnode *root,int jobid,rbtnode* last, int* flag)
     findlower(root->right,jobid,last,flag);
 }
 
+//healper function for nextnode
 void findhigher(rbtnode *root,int jobid, int* flag){
     if(*flag==1)
         return;
@@ -40,7 +29,6 @@ void findhigher(rbtnode *root,int jobid, int* flag){
     findhigher(root->left,jobid,flag);
     if(root->jobid >jobid){
         heapnode* temp2 = root->twin;
-        // fout<<temp->jobid;
         fout<<"("<<temp2->jobID<<","<<temp2->exec_time<<","<<temp2->total_time<<")"<<endl;
         *flag=1;
         return;
@@ -50,11 +38,9 @@ void findhigher(rbtnode *root,int jobid, int* flag){
 
 
 
-
+// find smallest node larger than given job id
 void rbt::nextnode(int jobid){
     int flag=0;
-    // struct rbtnode* result = NULL;
-    // fout<<"nextnode"<<endl;
     findhigher(root,jobid,&flag);
 
     if(flag!=1)
@@ -62,6 +48,7 @@ void rbt::nextnode(int jobid){
     
 }
 
+// find largest node less than given jobid
 void rbt::prevnode(int jobid){
     int flag=0;
 
@@ -86,7 +73,7 @@ rbtnode* findnodeHelper(rbtnode* root,int jobid){
         return findnodeHelper(root->right,jobid);
 }
 
-//function to find a node in the tree
+//method to find a node in the tree
 rbtnode* rbt::findnode(int jobid){
 
     rbtnode* temp = findnodeHelper(root,jobid);
@@ -94,7 +81,6 @@ rbtnode* rbt::findnode(int jobid){
         fout<<"(0,0,0)\n";
     else{
         heapnode* temp2 = temp->twin;
-        // fout<<temp->jobid;
         fout<<"("<<temp2->jobID<<","<<temp2->exec_time<<","<<temp2->total_time<<")"<<endl;
     }
     return temp;
@@ -118,7 +104,6 @@ void inorderHelper(rbtnode *root,int low,int high,int *flag)
         heapnode* temp = root->twin;
         fout<<temp->exec_time<<","<<temp->total_time<<")";
     }
-    //print more info here
     if(root->jobid <high)
         inorderHelper(root->right,low,high,flag);
 }
@@ -138,9 +123,10 @@ rbtnode* rbtinsert(rbtnode* root, rbtnode *ptr){
         root->right->parent = root;
     }
     return root;
+    // fixing of properties is done from the rbt method
 }
  
- 
+ //do a rotate left operation
 void rbt::rotateleft(rbtnode *&root, rbtnode *&ptr){
     rbtnode *ptr_right = ptr->right;
  
@@ -163,6 +149,7 @@ void rbt::rotateleft(rbtnode *&root, rbtnode *&ptr){
     ptr_right->left = ptr;
 }
  
+// do a rotate right operation
 void rbt::rotateright(rbtnode *&root, rbtnode *&ptr){
     rbtnode *ptr_left = ptr->left;
     ptr->left = ptr_left->right;
@@ -185,6 +172,7 @@ void rbt::rotateright(rbtnode *&root, rbtnode *&ptr){
     ptr->parent = ptr_left;
 }
  
+
 // function fixes rbt violations caused by bst insertion
 void rbt::fixtree(rbtnode *&root, rbtnode *&ptr){
     rbtnode *parent_ptr = NULL;
@@ -269,14 +257,12 @@ rbtnode* rbt::insert(const int &jobid){
     rbtnode* bk = ptr;
    // bst insert
     root = rbtinsert(root, ptr);
- 
-    // fix violations
-    fixtree(root, ptr);
 
     return bk;
+    //violations are fixed from the main program
 }
  
-// Function in order traversal
+// Function in order traversal in range low to high
 
 void rbt::inorder(int low,int high){
     int flag=0;
@@ -287,72 +273,76 @@ void rbt::inorder(int low,int high){
 }
 
 
-rbtnode* successor(rbtnode *p)
+
+
+rbtnode* successor(rbtnode *node)
 {
-      rbtnode *y=NULL;
-     if(p->left!=NULL)
+      rbtnode *k=NULL;
+     if(node->left!=NULL)
      {
-         y=p->left;
-         while(y->right!=NULL)
-              y=y->right;
+         k=node->left;
+         while(k->right!=NULL)
+              k=k->right;
      }
      else
      {
-         y=p->right;
-         while(y->left!=NULL)
-              y=y->left;
+         k=node->right;
+         while(k->left!=NULL)
+              k=k->left;
      }
-     return y;
+     return k;
 
 }
 
 
-void rbt::deletenode(rbtnode* p)
-{
+void rbt::deletenode(rbtnode* p){
     
-     // rbtnode *p;
      p=root;
-     rbtnode *y=NULL;
-     rbtnode *q=NULL;
-     
-     if(1)
+     rbtnode *k=NULL,*y=NULL, *q=NULL;
+
+ 
+     if(p->left==NULL||p->right==NULL)
+          y=p;
+     else
+          y=successor(p);
+        
+     if(y->left!=NULL)
+          q=y->left;
+     else
      {
-         if(p->left==NULL||p->right==NULL)
-              y=p;
+          if(y->right!=NULL)
+               q=y->right;
+          else
+               q=NULL;
+     }
+     if(q!=NULL)
+          q->parent=y->parent;
+     if(y->parent==NULL)
+          root=q;
+     else
+     {
+         if(y==y->parent->left)
+            y->parent->left=q;
          else
-              y=successor(p);
-            
-         if(y->left!=NULL)
-              q=y->left;
-         else
-         {
-              if(y->right!=NULL)
-                   q=y->right;
-              else
-                   q=NULL;
-         }
-         if(q!=NULL)
-              q->parent=y->parent;
-         if(y->parent==NULL)
-              root=q;
-         else
-         {
-             if(y==y->parent->left)
-                y->parent->left=q;
-             else
-                y->parent->right=q;
-         }
-         if(y!=p)
-         {
-             p->color=y->color;
-             p->jobid=y->jobid;
-         }
-         if(y->color==BLACK && q!=NULL) 
-             fixviolation(q);
-     } 
+            y->parent->right=q;
+     }
+     if(y!=p)
+     {
+         p->color=y->color;
+         p->jobid=y->jobid;
+         p->twin = y->twin;
+
+         struct heapnode* temp;
+         temp = p->twin;
+         temp->twin = p;
+
+     }
+     if(k!=NULL) 
+         fixviolation(q);
+ 
 }
 
-
+//left rotate after delete
 void rbt::leftrotate(rbtnode *p)
 {
      if(p->right==NULL)
@@ -382,6 +372,7 @@ void rbt::leftrotate(rbtnode *p)
            p->parent=y;
      }
 }
+//right rotation after delete
 void rbt::rightrotate(rbtnode *p)
 {
      if(p->left==NULL)
@@ -413,31 +404,26 @@ void rbt::rightrotate(rbtnode *p)
 }
 
 
+//function to fix violation after delete
 void rbt::fixviolation(rbtnode *p)
 {
     rbtnode *s;
-    while(p!=root&&p->color==BLACK)
-    {
-          if(p->parent->left==p)
-          {
+    while(p!=root&&p->color==BLACK){
+          if(p->parent->left==p){
                   s=p->parent->right;
-                  if(s->color==RED)
-                  {
+                  if(s->color==RED){
                          s->color=BLACK;
                          p->parent->color=RED;
                          leftrotate(p->parent);
                          s=p->parent->right;
                   }
-                  if(s->right->color==BLACK&&s->left->color==BLACK)
-                  {
+                  if(s->right->color==BLACK&&s->left->color==BLACK){
                          s->color=RED;
                          p=p->parent;
                   }
-                  else
-                  {
-                      if(s->right->color==BLACK)
-                      {
-                             s->left->color==BLACK;
+                  else{
+                      if(s->right->color==BLACK){
+                             s->left->color=BLACK;
                              s->color=RED;
                              rightrotate(s);
                              s=p->parent->right;
@@ -449,25 +435,20 @@ void rbt::fixviolation(rbtnode *p)
                       p=root;
                   }
           }
-          else
-          {
+          else{
                   s=p->parent->left;
-                  if(s->color==RED)
-                  {
+                  if(s->color==RED){
                         s->color=BLACK;
                         p->parent->color=RED;
                         rightrotate(p->parent);
                         s=p->parent->left;
                   }
-                  if(s->left->color==BLACK&&s->right->color==BLACK)
-                  {
+                  if(s->left->color==BLACK&&s->right->color==BLACK){
                         s->color=RED;
                         p=p->parent;
                   }
-                  else
-                  {
-                        if(s->left->color==BLACK)
-                        {
+                  else{
+                        if(s->left->color==BLACK){
                               s->right->color=BLACK;
                               s->color=RED;
                               leftrotate(s);

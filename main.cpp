@@ -54,19 +54,10 @@ int scheduler::dispatch(int x){
 	if(thisnode->total_time-thisnode->exec_time<=0){
 		retval = thisnode->exec_time-thisnode->total_time;
 		
-		// cout<<"removed node: jobID="<<thisnode->jobID<<" total_time="<<thisnode->total_time<<" exec_time="<<thisnode->exec_time<<endl;
-		// cout<<"retval="<<retval<<" total time="<<thisnode->total_time<<" exec_time="<<thisnode->exec_time<<endl;
-		
-		//overflow 
-		//remove from rbt
 		myrbt->deletenode(thisnode->twin);
-		// myrbt->inorder(0,10000);
-		//remove from heap
-		struct heapnode* temp = myheap->removeMin();
+		myheap->removeMin();
 		
 	}
-	// fout<<"Dispatched: "<<thisnode->jobID<<endl;
-	// if(retval)
 	myheap->heapify();
 	
 	return retval;
@@ -74,7 +65,6 @@ int scheduler::dispatch(int x){
 void scheduler::syncTime(int time){
 	int param,remain;
 	while(time>counter){
-		// cout<<"time="<<time<<" counter="<<counter<<endl;
 		if(time-counter < 5)
 			param = time-counter;
 		else
@@ -87,11 +77,8 @@ void scheduler::syncTime(int time){
 		}
 		else
 			counter=time;
-		// if(remain !=0)
-			// cout<<"scheduled for ="<<5-remain<<endl;
 		
 	}
-	// fout<<"syncTime complete: time="<<time<<" count="<<counter<<endl;
 }
 scheduler::scheduler(){
 		counter=0;
@@ -131,62 +118,60 @@ void scheduler::prevjob(int JobID){
 
 void scheduler::insert(int JobID,int totaltime){
 
-	// cout<<"inserting node: jobID="<<JobID<<" totaltime="<<totaltime<<endl;
-	//insert into rbt
 	rbtnode* temp2 = myrbt->insert(JobID);
 
 	//insert into heap
-	heapnode* temp = myheap->insert(JobID,0,totaltime,temp2);
+	myheap->insert(JobID,0,totaltime,temp2);
 
-	//store pointers
-	// temp->twin = temp2;
-
-	//store ptr in heap
-	// fout<<"temp: "<<temp<<endl;
-	// temp2->twin = temp;
-
-
-	// fout<<"insertjob\n";
-	// fout<<"heap:"<<temp2->twin<<" rbt:"<<temp2<<endl;
 }
 
-int main(int argc, char** arg){
+int main(int argc, char** argv){
 
 	scheduler myscheduler; // create a scheduler object
 
 	char *ptr,*ptr1,buff[100];
 	int num;
 	ifstream file; 
-	file.open("sample.txt"); 
-	fout.open("output_file.txt");
-	// fout<<"line: ";
+
+	//some book keeping
+	if(argc<2){
+		cout<<"Error: Not enough arguments"<<endl;
+		exit(1);
+	}
+
+	file.open(argv[1]); // open input file 
+	fout.open("output_file.txt"); //open output file
+	
+
+
 	for( std::string line; getline( file, line, '\n'); ){    
-		// fout<<"line: "<<line<<endl;
+
+
+		//variables for string parsing
 		int temp1,temp2;
 		ptr = strcpy(buff,line.c_str());
 		ptr = strtok(ptr,":");
 		num = atoi(ptr);
 
-		// fout<<"t"<<num<<" :";
+
+		//schedule jobs until counter = command time
 		myscheduler.syncTime(num);
 
-        // std::fout << ptr;
         ptr = strtok(NULL,"(");
-        // fout << ++ptr<<endl;
 
+        // Insert new job
         if(strcmp(ptr+1,"Insert")==0){
-        	// fout<<"enterer print2";
         	ptr = strtok(NULL,",");
         	temp1 = atoi(ptr);
         	ptr = strtok(NULL,")");
         	temp2 = atoi(ptr);
         	myscheduler.insert(temp1,temp2);
         }
+
+        // print jobs
         else if(strcmp(ptr+1,"PrintJob")==0){
-        	// fout<<"enterer print1";
         	ptr = strtok(NULL,")");
         	int i,flag=0;
-        	// fout<<"strlen="<<strlen(ptr)<<endl;
         	for(i=0;i<strlen(ptr);i++){
         		if(ptr[i]==',') {
         			flag=1;
@@ -194,44 +179,41 @@ int main(int argc, char** arg){
         		}
         	}
 
-   	     		// fout<<"here"<<endl;
    	     	if(flag==1){
+   	     		// print range of jobs
    	     		ptr1 = strtok(ptr,",");
    	     		ptr += strlen(ptr1)+1;
 				myscheduler.printjob(atoi(ptr1),atoi(ptr));
 
         	}
         	else{
-
-   	     		// fout<<"here2"<<ptr<<endl;
-        		myscheduler.printjob(atoi(ptr));
+        		// print single job
+   	    		myscheduler.printjob(atoi(ptr));
         	}
 
 
-   	     		// fout<<"here3"<<endl;
-   //      	ptr1 = strtok(ptr,",");
-   //      	fout<<"\n----------------------ptr:"<<ptr<<"ptr1:"<<ptr1<<endl;
-   //      	if(ptr1==NULL)
-			// 	myscheduler.printjob(atoi(ptr));
-			// else
-			// 	myscheduler.printjob(atoi(ptr1),atoi(ptr+strlen(ptr1)+1));
          }
-
+         // print next job
         else if(strcmp(ptr+1,"NextJob")==0)
         	myscheduler.nextjob(atoi(strtok(NULL,")")));
+
+        // print previous job
         else if(strcmp(ptr+1,"PreviousJob")==0)
         	myscheduler.prevjob(atoi(strtok(NULL,")")));
+        //error case
         else
         	fout<<"unknown operation"<<endl;
 
+
     }
 
+    // End of input file. schedule all the pending jobs
     while(myscheduler.ifjob()){
-    	// cout<<"last:"<<myscheduler.ifjob()<<endl;
     	myscheduler.dispatch(100);
     }
     
-    // fout<<"end of program"<<endl;
+
+    //close file handlers
 	file.close();
 	fout.close();
 
