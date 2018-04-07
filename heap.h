@@ -15,6 +15,7 @@ public:
 
 	struct heapnode* root;
 	int last;
+	int size;
 	heapnode* insert(int, int, int,rbtnode*); // insert a new node into the heap.
 	struct heapnode* removeMin(); // remove the item from top of the heap ie minimum executed time.
 	void swapJob(struct heapnode* a,struct heapnode* b);
